@@ -9,48 +9,41 @@ RisingLion is a movie ticket booking web app (no payments). It features two role
 
 - `backend/` — Java 21, Spring Boot 3, Maven, MySQL 8, JWT security, OpenAPI/Swagger UI.
 - `frontend/` — React + Vite + TypeScript + Tailwind CSS.
-- `docker/` — Docker Compose for MySQL 8 and phpMyAdmin.
+- `docker/` — Docker Compose for all services (DB, backend, frontend, phpMyAdmin).
 - `.github/workflows/` — CI building and testing backend and frontend.
 
-## Quick Start
+## Quick Start (Docker only)
 
-Prereqs: Java 21, Node 18+, Docker, Maven 3.9+
+Prereqs: Docker Desktop
 
-1) Start DB services
-
+1) Start all services
 - cd docker
 - docker compose up -d
 
-MySQL: localhost:3306 (db: risinglion, user: root, password: rootpass)
-phpMyAdmin: http://localhost:8081
+2) Open the apps
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:8080
+- Swagger UI: http://localhost:8080/swagger-ui.html
+- phpMyAdmin: http://localhost:8081
+- MySQL: localhost:3306 (db: risinglion)
 
-2) Backend
+## Credentials
 
-- cd backend
-- mvn spring-boot:run
+- MySQL
+  - username: root
+  - password: rootpass
+  - database: risinglion
 
-App starts at http://localhost:8080
-Swagger UI: http://localhost:8080/swagger-ui.html
+- phpMyAdmin
+  - username: root
+  - password: rootpass
+  - note: use the same MySQL credentials
 
-3) Frontend
+- Admin user (web app)
+  - email: admin@demo.com
+  - password: min123!
 
-- cd frontend
-- cp .env.example .env
-- npm install
-- npm run dev
-
-App runs at http://localhost:5173
-
-## Configuration
-
-Backend `application.yml` uses:
-- spring.datasource.url: jdbc:mysql://localhost:3306/risinglion
-- spring.datasource.username: root
-- spring.datasource.password: rootpass
-- jwt.secret: change in production
-
-Frontend `.env`:
-- VITE_API_BASE_URL=http://localhost:8080/api
+You can also sign up in the frontend to create a regular user.
 
 ## API Overview (prefix `/api`)
 
@@ -101,7 +94,7 @@ Flyway migrations create schema and seed:
 - 3 theaters with 8 rows × 12 seats each (rows A–H)
 - Categories and ~6 movies
 - Several screenings across the next 7 days
-- One admin user (admin@demo.com / min123!) and one regular user
+- One admin user (admin@demo.com / min123!) and one regular user (you can also sign up via the app)
 
 ## CI
 
