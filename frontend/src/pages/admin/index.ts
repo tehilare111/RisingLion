@@ -1,0 +1,5 @@
+export { default as AdminDashboard } from './AdminDashboard'
+export { default as AdminMovies } from './AdminMovies'
+export { default as AdminCategories } from './AdminCategories'
+export { default as AdminTheaters } from './AdminTheaters'
+export { default as AdminUsers } from './AdminUsers'

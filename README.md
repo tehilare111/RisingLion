@@ -1,105 +1,119 @@
-# Airplane Ticket Booking and Management System
+# RisingLion
 
-Welcome to the Airplane Ticket Booking and Management System project! This web application aims to revolutionize the traditional methods of booking and managing flight tickets by providing a user-friendly interface, secure authentication, and QR code verification for enhanced security. Below you'll find detailed information on how to set up, use, and contribute to this project.
+RisingLion is a movie ticket booking web app (no payments). It features two roles: USER and ADMIN.
 
-## Table of Contents
+- USER: sign up/login, browse/search movies, view reviews, pick a screening, view seat map with availability, reserve seats, see "My bookings", rate 1–5 and write a text review (only for movies they've seen), edit profile (email), logout.
+- ADMIN: CRUD movies and categories, manage theaters, define screenings (movie, theater, datetime, ticketPrice), view bookings per screening, view users, promote/demote to ADMIN and remove users.
 
-- [Introduction](#introduction)
-- [Features](#features)
-- [Demo](#demo)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Contributing](#contributing)
-- [License](#license)
+## Monorepo Structure
 
-## Introduction
+- `backend/` — Java 21, Spring Boot 3, Maven, MySQL 8, JWT security, OpenAPI/Swagger UI.
+- `frontend/` — React + Vite + TypeScript + Tailwind CSS.
+- `docker/` — Docker Compose for MySQL 8 and phpMyAdmin.
+- `.github/workflows/` — CI building and testing backend and frontend.
 
-In the fast-paced digital age, the Airplane Ticket Booking and Management System provides a modern solution to the limitations of traditional ticketing methods. By leveraging the MERN stack (MongoDB, Express.js, React.js, Node.js), this application offers a streamlined and secure platform for users to search, book, and manage flight tickets with ease.
+## Quick Start
 
-## Features
+Prereqs: Java 21, Node 18+, Docker, Maven 3.9+
 
-- **User Management**: Register, log in, and manage user profiles securely.
-- **Flight Search and Booking**: Search for flights based on various criteria, book tickets securely, and make payments through PCI-compliant gateways.
-- **QR Code Verification**: Generate and scan unique QR codes for each booked ticket for efficient verification at check-in or boarding gates.
-- **Admin Panel**: Manage flight listings, user information, and system configurations efficiently.
-- **Responsive Design**: Enjoy a seamless experience across different devices, including desktops, laptops, tablets, and smartphones.
+1) Start DB services
 
-## Demo
+- cd docker
+- docker compose up -d
 
-Check out the live demo of the Airplane Ticket Booking and Management System [here](https://abvssystem.web.app/).
+MySQL: localhost:3306 (db: risinglion, user: root, password: rootpass)
+phpMyAdmin: http://localhost:8081
 
-## Installation
+2) Backend
 
-To run this project locally, follow these steps:
+- cd backend
+- mvn spring-boot:run
 
-1. Clone the repository:
+App starts at http://localhost:8080
+Swagger UI: http://localhost:8080/swagger-ui.html
 
-```bash
-git clone https://github.com/PiyushPb/Airplane-Ticket-Booking.git
-```
+3) Frontend
 
-2. Navigate to the project directory:
+- cd frontend
+- cp .env.example .env
+- npm install
+- npm run dev
 
-```bash
-cd airplane-ticket-booking
-```
+App runs at http://localhost:5173
 
-3. There are 2 directories Frontend and backend
-for frontend
-```bash
-cd frontend
-```
+## Configuration
 
-for backend
-```bash
-cd backend
-```
+Backend `application.yml` uses:
+- spring.datasource.url: jdbc:mysql://localhost:3306/risinglion
+- spring.datasource.username: root
+- spring.datasource.password: rootpass
+- jwt.secret: change in production
 
-3. Install dependencies:
+Frontend `.env`:
+- VITE_API_BASE_URL=http://localhost:8080/api
 
-```bash
-npm install
-```
+## API Overview (prefix `/api`)
 
-4. Set up environment variables:
-   - Create a `.env` file in the root directory.
-   - Add environment variables for MongoDB connection, API keys, and other sensitive information.
+Auth:
+- POST /auth/signup
+- POST /auth/login -> { accessToken, user:{id,email,isAdmin} }
+- POST /auth/reset-password (placeholder)
 
-5. Start the development server:
+Users:
+- GET /users/me
+- PATCH /users/me (email)
 
-```bash
-npm run dev
-```
+Admin:
+- GET /admin/users
+- PATCH /admin/users/{id}/role/{role}
+- DELETE /admin/users/{id}
 
-6. Open your browser and visit `http://localhost:5173` to access the application.
+Movies & Categories:
+- GET /movies?query=&categoryId=&page=
+- GET /movies/{id}
+- GET /categories
+- (ADMIN) POST/PUT/DELETE /movies
+- (ADMIN) POST/PUT/DELETE /categories
 
-## Usage
+Screenings & Theaters:
+- GET /theaters
+- GET /screenings?date=YYYY-MM-DD
+- GET /movies/{id}/screenings
+- (ADMIN) POST/PUT/DELETE /theaters
+- (ADMIN) POST/PUT/DELETE /screenings
 
-Once the application is running, users can:
+Seats & Booking:
+- GET /screenings/{id}/seats -> seat map with availability
+- POST /bookings { screeningId, seatIds[] } -> creates Booking + Tickets; totalPrice = seat count × ticketPrice
+- GET /bookings/me
+- GET /screenings/{id}/bookings (ADMIN)
 
-- Register or log in to their accounts.
-- Search for flights based on their preferences.
-- Book tickets securely and make payments.
-- Manage booked tickets, including viewing QR codes for verification.
+Reviews:
+- GET /movies/{id}/reviews
+- POST /movies/{id}/reviews (only if user has a past booking for that movie)
+- PUT/DELETE /movies/{id}/reviews/{reviewId} (owner only)
 
-Admin users can access additional functionalities through the admin panel, such as managing flight listings and user information.
+Errors follow Problem+JSON style responses.
 
-## Contributing
+## Database & Seeding
 
-Contributions to this project are welcome! To contribute:
+Flyway migrations create schema and seed:
+- 3 theaters with 8 rows × 12 seats each (rows A–H)
+- Categories and ~6 movies
+- Several screenings across the next 7 days
+- One admin user (admin@demo.com / min123!) and one regular user
 
-1. Fork the repository.
-2. Create a new branch (`git checkout -b feature/my-feature`).
-3. Make your changes and commit them (`git commit -am 'Add new feature'`).
-4. Push to the branch (`git push origin feature/my-feature`).
-5. Create a new pull request.
+## CI
 
-Please ensure your contributions adhere to the [code of conduct](CODE_OF_CONDUCT.md).
+GitHub Actions builds and runs tests for backend and frontend.
 
-## License
+## Acceptance Checklist
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
----
-
-Feel free to reach out if you have any questions or need further assistance [Piyush Linkedin](https://www.linkedin.com/in/piyushpardeshi/). Happy coding!
+- Sign up/login with JWT; protected routes and role gating
+- Movie search & category filter
+- Admin can create screenings; they appear in user flows
+- Seat map reflects real-time availability; double booking prevented
+- Booking creates Booking + Tickets and appears under “My bookings”
+- Only users who booked can post a review for that movie
+- Swagger UI documents endpoints with examples
+- CI passes for both apps
