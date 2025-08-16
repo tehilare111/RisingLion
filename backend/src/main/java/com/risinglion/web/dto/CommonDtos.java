@@ -22,9 +22,11 @@ public class CommonDtos {
     public record SeatDto(Long id, String row, int number, boolean taken) {}
 
     // Screening
-    public record ScreeningDto(Long id, LocalDateTime datetime, BigDecimal ticketPrice, Long movieId, Long theaterId) {}
-    public record ScreeningCreateRequest(Long movieId, Long theaterId, LocalDateTime datetime, BigDecimal ticketPrice) {}
-    public record ScreeningUpdateRequest(Long movieId, Long theaterId, LocalDateTime datetime, BigDecimal ticketPrice) {}
+    // Return datetime as ISO-8601 UTC string with milliseconds and 'Z' suffix for consistent client parsing
+    public record ScreeningDto(Long id, String datetime, BigDecimal ticketPrice, Long movieId, Long theaterId) {}
+    // Accept datetime as String to allow timezone-aware inputs (e.g., ...Z) from clients
+    public record ScreeningCreateRequest(Long movieId, Long theaterId, String datetime, BigDecimal ticketPrice) {}
+    public record ScreeningUpdateRequest(Long movieId, Long theaterId, String datetime, BigDecimal ticketPrice) {}
 
     // Booking
     public record BookingDto(Long id, Long screeningId, BigDecimal totalPrice, List<TicketDto> tickets) {}
