@@ -52,7 +52,7 @@ export default function AdminMovies(){
   useEffect(() => { loadCategories() }, [])
   useEffect(() => { loadMovies(0); setPage(0) }, [])
 
-  const canCreate = useMemo(() => !!(title.trim() && duration && releaseDate && categoryId), [title, duration, releaseDate, categoryId])
+  const canCreate = useMemo(() => !!(title.trim() && duration && releaseDate && categoryId && description.trim()), [title, duration, releaseDate, categoryId, description])
 
   async function createMovie(e: React.FormEvent){
     e.preventDefault()
