@@ -15,8 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Instant;
-import java.time.ZoneId;
+import com.risinglion.util.DateTimeUtils;
 import java.util.List;
 
 @RestController
@@ -74,7 +73,7 @@ public class ScreeningController {
         Screening s = new Screening();
         Movie m = new Movie(); m.setId(req.movieId());
         Theater t = new Theater(); t.setId(req.theaterId());
-        s.setMovie(m); s.setTheater(t); s.setDatetime(parseLocalDateTime(req.datetime())); s.setTicketPrice(req.ticketPrice());
+        s.setMovie(m); s.setTheater(t); s.setDatetime(DateTimeUtils.parseUtcToLocal(req.datetime())); s.setTicketPrice(req.ticketPrice());
         return mappers.toScreeningDto(screeningRepository.save(s));
     }
 
@@ -84,21 +83,9 @@ public class ScreeningController {
         Screening s = screeningRepository.findById(id).orElseThrow();
         Movie m = new Movie(); m.setId(req.movieId());
         Theater t = new Theater(); t.setId(req.theaterId());
-        s.setMovie(m); s.setTheater(t); s.setDatetime(parseLocalDateTime(req.datetime())); s.setTicketPrice(req.ticketPrice());
-        return mappers.toScreeningDto(screeningRepository.save(s));
-    }
 
-    private static LocalDateTime parseLocalDateTime(String input) {
-        if (input == null || input.isBlank()) return null;
-        // If input includes 'Z' or offset, treat it as instant and convert to server local
-        if (input.endsWith("Z") || input.matches(".*[+-]\\d{2}:?\\d{2}$")) {
-            return Instant.parse(input).atZone(ZoneId.systemDefault()).toLocalDateTime();
-        }
-        // Ensure seconds are present
-        if (input.length() == 16) { // yyyy-MM-ddTHH:mm
-            input = input + ":00";
-        }
-        return LocalDateTime.parse(input);
+        s.setMovie(m); s.setTheater(t); s.setDatetime(DateTimeUtils.parseUtcToLocal(req.datetime())); s.setTicketPrice(req.ticketPrice());
+        return mappers.toScreeningDto(screeningRepository.save(s));
     }
 
     @DeleteMapping("/admin/screenings/{id}")

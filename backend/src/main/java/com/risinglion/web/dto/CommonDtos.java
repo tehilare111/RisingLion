@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import jakarta.validation.constraints.NotBlank;
 
 public class CommonDtos {
     // Category
@@ -25,8 +26,8 @@ public class CommonDtos {
     // Return datetime as ISO-8601 UTC string with milliseconds and 'Z' suffix for consistent client parsing
     public record ScreeningDto(Long id, String datetime, BigDecimal ticketPrice, Long movieId, Long theaterId) {}
     // Accept datetime as String to allow timezone-aware inputs (e.g., ...Z) from clients
-    public record ScreeningCreateRequest(Long movieId, Long theaterId, String datetime, BigDecimal ticketPrice) {}
-    public record ScreeningUpdateRequest(Long movieId, Long theaterId, String datetime, BigDecimal ticketPrice) {}
+    public record ScreeningCreateRequest(Long movieId, Long theaterId, @NotBlank String datetime, BigDecimal ticketPrice) {}
+    public record ScreeningUpdateRequest(Long movieId, Long theaterId, @NotBlank String datetime, BigDecimal ticketPrice) {}
 
     // Booking
     public record BookingDto(Long id, Long screeningId, BigDecimal totalPrice, List<TicketDto> tickets) {}
