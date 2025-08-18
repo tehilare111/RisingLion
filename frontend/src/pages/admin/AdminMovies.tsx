@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { authFetch } from '../../auth/AuthContext'
+import { authFetch, fetchJsonOrThrow } from '../../auth/AuthContext'
 
 const API = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
 
@@ -21,6 +21,8 @@ export default function AdminMovies(){
   const [categories, setCategories] = useState<Category[]>([])
   const [page, setPage] = useState(0)
   const [moviesPage, setMoviesPage] = useState<Page<Movie> | null>(null)
+  const [error, setError] = useState('')
+  const [errorTitle, setErrorTitle] = useState<string | undefined>(undefined)
 
   // New movie form state
   const [title, setTitle] = useState('')
@@ -40,13 +42,13 @@ export default function AdminMovies(){
   const [eCategoryId, setECategoryId] = useState<number | ''>('')
 
   async function loadCategories(){
-    const res = await fetch(`${API}/categories`)
-    setCategories(await res.json())
+    try { setCategories(await fetchJsonOrThrow(`${API}/categories`)) }
+    catch (e: any) { setError(e?.message || 'Failed to load categories'); setErrorTitle(e?.title) }
   }
 
   async function loadMovies(p = page){
-    const res = await fetch(`${API}/movies?page=${p}`)
-    setMoviesPage(await res.json())
+    try { setMoviesPage(await fetchJsonOrThrow(`${API}/movies?page=${p}`)) }
+    catch (e: any) { setError(e?.message || 'Failed to load movies'); setErrorTitle(e?.title) }
   }
 
   useEffect(() => { loadCategories() }, [])
@@ -57,10 +59,13 @@ export default function AdminMovies(){
   async function createMovie(e: React.FormEvent){
     e.preventDefault()
     if (!canCreate) return
-    await authFetch(`${API}/admin/movies`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: title.trim(), duration: Number(duration), description: description.trim(), releaseDate, imageURL: imageURL.trim(), categoryId: Number(categoryId) })
-    })
+    try {
+      const res = await authFetch(`${API}/admin/movies`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: title.trim(), duration: Number(duration), description: description.trim(), releaseDate, imageURL: imageURL.trim(), categoryId: Number(categoryId) })
+      })
+      if (!res.ok) throw await toProblemError(res)
+    } catch (e: any) { setError(e?.message || 'Failed to create movie'); setErrorTitle(e?.title); return }
     // reset
     setTitle(''); setDuration(''); setDescription(''); setReleaseDate(''); setImageURL(''); setCategoryId('')
     loadMovies(0); setPage(0)
@@ -76,21 +81,41 @@ export default function AdminMovies(){
   async function saveEdit(e: React.FormEvent){
     e.preventDefault()
     if (editingId == null || !eTitle.trim() || !eDuration || !eReleaseDate || !eCategoryId) return
-    await authFetch(`${API}/admin/movies/${editingId}`, {
-      method: 'PUT', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: eTitle.trim(), duration: Number(eDuration), description: eDescription.trim(), releaseDate: eReleaseDate, imageURL: eImageURL.trim(), categoryId: Number(eCategoryId) })
-    })
+    try {
+      const res = await authFetch(`${API}/admin/movies/${editingId}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: eTitle.trim(), duration: Number(eDuration), description: eDescription.trim(), releaseDate: eReleaseDate, imageURL: eImageURL.trim(), categoryId: Number(eCategoryId) })
+      })
+      if (!res.ok) throw await toProblemError(res)
+    } catch (e: any) { setError(e?.message || 'Failed to update movie'); setErrorTitle(e?.title); return }
     setEditingId(null)
     loadMovies(page)
   }
 
   async function remove(m: Movie){
-    await authFetch(`${API}/admin/movies/${m.id}`, { method: 'DELETE' })
+    try {
+      const res = await authFetch(`${API}/admin/movies/${m.id}`, { method: 'DELETE' })
+      if (!res.ok) throw await toProblemError(res)
+    } catch (e: any) { setError(e?.message || 'Failed to delete movie'); setErrorTitle(e?.title); return }
     // If removing last item on last page, refetch previous page
     const newCount = (moviesPage?.content.length || 1) - 1
     const targetPage = newCount <= 0 && page > 0 ? page - 1 : page
     setPage(targetPage)
     loadMovies(targetPage)
+  }
+
+  async function toProblemError(res: Response) {
+    let title = 'Request failed'
+    let message = `${res.status} ${res.statusText}`
+    try {
+      const problem = await res.json()
+      if (problem?.title) title = problem.title
+      if (problem?.detail) message = problem.detail
+      else if (problem?.message) message = problem.message
+    } catch {}
+    const err = new Error(message) as Error & { title?: string; status?: number }
+    err.title = title; err.status = res.status
+    return err
   }
 
   function goto(p: number){ setPage(p); loadMovies(p) }

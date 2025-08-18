@@ -12,13 +12,31 @@ export default function Home() {
   const [categories, setCategories] = useState<Category[]>([])
   const [categoryId, setCategoryId] = useState<number | ''>('')
   const [query, setQuery] = useState('')
+  const [error, setError] = useState('')
+  const [errorTitle, setErrorTitle] = useState<string | undefined>(undefined)
 
-  useEffect(() => { fetch(`${API}/categories`).then(r => r.json()).then(setCategories) }, [])
+  useEffect(() => {
+    fetch(`${API}/categories`).then(async r => {
+      if (!r.ok) {
+        try { const p = await r.json(); setError(p?.detail || p?.message || 'Failed to load categories'); setErrorTitle(p?.title) }
+        catch { setError('Failed to load categories') }
+        return []
+      }
+      return r.json()
+    }).then(setCategories as any)
+  }, [])
   useEffect(() => {
     const params = new URLSearchParams()
     if (query) params.set('query', query)
     if (categoryId) params.set('categoryId', String(categoryId))
-    fetch(`${API}/movies?${params.toString()}`).then(r => r.json()).then(p => setMovies(p.content || []))
+    fetch(`${API}/movies?${params.toString()}`).then(async r => {
+      if (!r.ok) {
+        try { const p = await r.json(); setError(p?.detail || p?.message || 'Failed to load movies'); setErrorTitle(p?.title) }
+        catch { setError('Failed to load movies') }
+        return { content: [] }
+      }
+      return r.json()
+    }).then(p => setMovies(p.content || []))
   }, [query, categoryId])
 
   return (

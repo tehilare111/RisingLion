@@ -28,6 +28,8 @@ export default function AdminTheaters(){
   const [movies, setMovies] = useState<Movie[]>([])
   const [date, setDate] = useState<string>(() => new Date().toISOString().slice(0,10))
   const [screenings, setScreenings] = useState<Screening[]>([])
+  const [error, setError] = useState('')
+  const [errorTitle, setErrorTitle] = useState<string | undefined>(undefined)
 
   // Create theater
   const [creatingTheater, setCreatingTheater] = useState(false)
@@ -45,9 +47,20 @@ export default function AdminTheaters(){
   const [eDatetime, setEDatetime] = useState('')
   const [ePrice, setEPrice] = useState('')
 
-  async function loadTheaters(){ const res = await fetch(`${API}/theaters`); setTheaters(await res.json()) }
-  async function loadMovies(){ setMovies(await fetchAllMovies()) }
-  async function loadScreenings(){ const res = await fetch(`${API}/screenings?date=${date}`); setScreenings(await res.json()) }
+  async function loadTheaters(){
+    const res = await fetch(`${API}/theaters`)
+    if (!res.ok) { try { const p = await res.json(); setError(p?.detail || p?.message || 'Failed to load theaters'); setErrorTitle(p?.title) } catch { setError('Failed to load theaters') }; return }
+    setTheaters(await res.json())
+  }
+  async function loadMovies(){
+    try { setMovies(await fetchAllMovies()) }
+    catch { /* fallback to empty list */ }
+  }
+  async function loadScreenings(){
+    const res = await fetch(`${API}/screenings?date=${date}`)
+    if (!res.ok) { try { const p = await res.json(); setError(p?.detail || p?.message || 'Failed to load screenings'); setErrorTitle(p?.title) } catch { setError('Failed to load screenings') }; return }
+    setScreenings(await res.json())
+  }
 
   useEffect(() => { loadTheaters(); loadMovies() }, [])
   useEffect(() => { loadScreenings() }, [date])
@@ -57,17 +70,26 @@ export default function AdminTheaters(){
   async function createTheater(){
     setCreatingTheater(true)
     try {
-      await authFetch(`${API}/admin/theaters`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
+      const res = await authFetch(`${API}/admin/theaters`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
+      if (!res.ok) {
+        try { const p = await res.json(); setError(p?.detail || p?.message || 'Failed to create theater'); setErrorTitle(p?.title) } catch { setError('Failed to create theater') }
+        return
+      }
       await loadTheaters()
     } finally { setCreatingTheater(false) }
   }
 
-  async function deleteTheater(id: number){ await authFetch(`${API}/admin/theaters/${id}`, { method: 'DELETE' }); loadTheaters(); loadScreenings() }
+  async function deleteTheater(id: number){
+    const res = await authFetch(`${API}/admin/theaters/${id}`, { method: 'DELETE' })
+    if (!res.ok) { try { const p = await res.json(); setError(p?.detail || p?.message || 'Failed to delete theater'); setErrorTitle(p?.title) } catch { setError('Failed to delete theater') }; return }
+    loadTheaters(); loadScreenings()
+  }
 
   async function createScreening(e: React.FormEvent){
     e.preventDefault()
     if (!canCreateScreening) return
-    await authFetch(`${API}/admin/screenings`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ movieId: Number(cMovieId), theaterId: Number(cTheaterId), datetime: new Date(cDatetime).toISOString(), ticketPrice: cPrice }) })
+    const res = await authFetch(`${API}/admin/screenings`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ movieId: Number(cMovieId), theaterId: Number(cTheaterId), datetime: new Date(cDatetime).toISOString(), ticketPrice: cPrice }) })
+    if (!res.ok) { try { const p = await res.json(); setError(p?.detail || p?.message || 'Failed to create screening'); setErrorTitle(p?.title) } catch { setError('Failed to create screening') }; return }
     setCMovieId(''); setCTheaterId(''); setCDatetime(''); setCPrice('')
     loadScreenings()
   }
@@ -82,11 +104,16 @@ export default function AdminTheaters(){
   async function saveEdit(e: React.FormEvent){
     e.preventDefault()
     if (editingId == null) return
-    await authFetch(`${API}/admin/screenings/${editingId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ movieId: Number(eMovieId), theaterId: Number(eTheaterId), datetime: new Date(eDatetime).toISOString(), ticketPrice: ePrice }) })
+    const res = await authFetch(`${API}/admin/screenings/${editingId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ movieId: Number(eMovieId), theaterId: Number(eTheaterId), datetime: new Date(eDatetime).toISOString(), ticketPrice: ePrice }) })
+    if (!res.ok) { try { const p = await res.json(); setError(p?.detail || p?.message || 'Failed to update screening'); setErrorTitle(p?.title) } catch { setError('Failed to update screening') }; return }
     setEditingId(null); loadScreenings()
   }
 
-  async function deleteScreening(id: number){ await authFetch(`${API}/admin/screenings/${id}`, { method: 'DELETE' }); loadScreenings() }
+  async function deleteScreening(id: number){
+    const res = await authFetch(`${API}/admin/screenings/${id}`, { method: 'DELETE' })
+    if (!res.ok) { try { const p = await res.json(); setError(p?.detail || p?.message || 'Failed to delete screening'); setErrorTitle(p?.title) } catch { setError('Failed to delete screening') }; return }
+    loadScreenings()
+  }
 
   return (
     <div className="space-y-6">
