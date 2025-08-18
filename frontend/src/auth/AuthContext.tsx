@@ -58,12 +58,12 @@ export async function authFetch(input: RequestInfo, init?: RequestInit) {
   if (!res.ok) {
     try {
       const problem = await res.clone().json()
-      const title = problem?.title || 'Request failed'
-      const message = problem?.detail || problem?.message || `${res.status} ${res.statusText}`
-      window.dispatchEvent(new CustomEvent('app-error', { detail: { title, message } }))
+      const message = problem?.detail || problem?.message
+      if (message) {
+        window.dispatchEvent(new CustomEvent('app-error', { detail: { message } }))
+      }
     } catch {
-      const message = `${res.status} ${res.statusText}`
-      window.dispatchEvent(new CustomEvent('app-error', { detail: { title: 'Request failed', message } }))
+      // No body / not JSON -> don't show a generic HTTP code toast; caller can handle
     }
   }
   return res
