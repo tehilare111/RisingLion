@@ -3,7 +3,9 @@ package com.risinglion.web.dto;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
+import jakarta.validation.constraints.NotBlank;
 
 public class CommonDtos {
     // Category
@@ -22,9 +24,9 @@ public class CommonDtos {
     public record SeatDto(Long id, String row, int number, boolean taken) {}
 
     // Screening
-    public record ScreeningDto(Long id, LocalDateTime datetime, BigDecimal ticketPrice, Long movieId, Long theaterId) {}
-    public record ScreeningCreateRequest(Long movieId, Long theaterId, LocalDateTime datetime, BigDecimal ticketPrice) {}
-    public record ScreeningUpdateRequest(Long movieId, Long theaterId, LocalDateTime datetime, BigDecimal ticketPrice) {}
+    public record ScreeningDto(Long id, String datetime, BigDecimal ticketPrice, Long movieId, Long theaterId) {}
+    public record ScreeningCreateRequest(Long movieId, Long theaterId, Instant datetime, BigDecimal ticketPrice) {}
+    public record ScreeningUpdateRequest(Long movieId, Long theaterId, Instant datetime, BigDecimal ticketPrice) {}
 
     // Booking
     public record BookingDto(Long id, Long screeningId, BigDecimal totalPrice, List<TicketDto> tickets) {}

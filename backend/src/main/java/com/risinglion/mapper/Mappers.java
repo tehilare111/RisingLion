@@ -29,6 +29,7 @@ public interface Mappers {
 
     @Mapping(target = "movieId", source = "movie.id")
     @Mapping(target = "theaterId", source = "theater.id")
+    @Mapping(target = "datetime", source = "datetime", qualifiedByName = "localDateTimeToUtcZ")
     ScreeningDto toScreeningDto(Screening s);
 
     @Mapping(target = "seatId", source = "seat.id")
@@ -43,4 +44,10 @@ public interface Mappers {
 
     @Mapping(target = "isAdmin", source = "admin")
     UserAdminDto toUserAdminDto(User u);
+
+    @Named("localDateTimeToUtcZ")
+    default String localDateTimeToUtcZ(java.time.LocalDateTime value) {
+        if (value == null) return null;
+        return value.atZone(java.time.ZoneOffset.UTC).toInstant().toString();
+    }
 }
