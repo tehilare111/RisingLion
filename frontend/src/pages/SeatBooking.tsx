@@ -34,8 +34,17 @@ export default function SeatBooking() {
   async function book() {
     if (!user) { navigate('/login'); return }
     const res = await authFetch(`${API}/bookings`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ screeningId: Number(screeningId), seatIds: selected }) })
-    if (res.status === 409) { alert('Some seats were just taken. Please reselect.'); setSelected([]); setSeats(await (await fetch(`${API}/screenings/${screeningId}/seats`)).json()); return }
-    if (!res.ok) { alert('Booking failed'); return }
+    if (res.status === 409) {
+      window.dispatchEvent(new CustomEvent('app-error', { detail: { message: 'Some seats were just taken. Please reselect.' } }))
+      setSelected([])
+      setSeats(await (await fetch(`${API}/screenings/${screeningId}/seats`)).json())
+      return
+    }
+    if (!res.ok) {
+      try { const p = await res.json(); if (p?.detail || p?.message) { window.dispatchEvent(new CustomEvent('app-error', { detail: { message: p.detail || p.message } })) } }
+      catch { /* no message -> show nothing; button state unchanged */ }
+      return
+    }
     navigate('/bookings')
   }
 

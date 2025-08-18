@@ -34,14 +34,17 @@ export default function MovieDetails() {
   }, [id, user?.id])
 
   async function submitReview() {
-    if (!user) return alert('Please login to review')
+    if (!user) { window.dispatchEvent(new CustomEvent('app-error', { detail: { message: 'Please login to review.' } })); return }
     const method = myReview ? 'PUT' : 'POST'
     const res = await authFetch(`${API}/movies/${id}/reviews`, {
       method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ rating, text })
     })
-    if (res.status === 403) { alert("You can only review movies you've seen."); return }
+    if (res.status === 403) {
+      window.dispatchEvent(new CustomEvent('app-error', { detail: { message: "You can only review movies you've seen." } }))
+      return
+    }
     if (!res.ok) {
       try { const p = await res.json(); setError(p?.detail || p?.message || 'Failed to submit review'); setErrorTitle(p?.title) }
       catch { setError('Failed to submit review') }

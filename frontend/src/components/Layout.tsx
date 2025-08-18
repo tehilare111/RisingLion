@@ -5,13 +5,13 @@ import ErrorCard from './ErrorCard'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth()
-  const [toasts, setToasts] = useState<Array<{ id: number; title?: string; message: string }>>([])
+  const [toasts, setToasts] = useState<Array<{ id: number; message: string }>>([])
   const timersRef = useRef<Record<number, number>>({})
 
   useEffect(() => {
     function onErr(e: any){
       const id = Date.now() + Math.floor(Math.random() * 1000)
-      setToasts(prev => [...prev, { id, title: e.detail?.title, message: e.detail?.message }])
+      setToasts(prev => [...prev, { id, message: e.detail?.message }])
       // Auto-dismiss after 5s
       const timeoutId = window.setTimeout(() => {
         setToasts(prev => prev.filter(t => t.id !== id))
@@ -55,7 +55,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {toasts.map(t => (
           <div key={t.id} className="max-w-xs">
             <ErrorCard
-              title={t.title}
               message={t.message}
               onClose={() => {
                 if (timersRef.current[t.id]) { clearTimeout(timersRef.current[t.id]); delete timersRef.current[t.id] }
