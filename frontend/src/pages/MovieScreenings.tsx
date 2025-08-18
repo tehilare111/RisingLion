@@ -21,7 +21,7 @@ export default function MovieScreenings() {
       <div className="flex flex-wrap gap-2">
         {items.map(s => (
           <Link key={s.id} to={`/movies/${id}/seats?screeningId=${s.id}`} className="bg-white border px-3 py-2 rounded">
-            {new Date(s.datetime).toLocaleString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit', hour: 'numeric', minute: '2-digit', hour12: true })}
+            {new Date(s.datetime).toLocaleString()}
           </Link>
         ))}
       </div>
