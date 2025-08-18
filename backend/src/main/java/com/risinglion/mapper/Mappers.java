@@ -48,6 +48,6 @@ public interface Mappers {
     @Named("localDateTimeToUtcZ")
     default String localDateTimeToUtcZ(java.time.LocalDateTime value) {
         if (value == null) return null;
-        return value.atZone(java.time.ZoneId.systemDefault()).toInstant().toString();
+        return value.atZone(java.time.ZoneOffset.UTC).toInstant().toString();
     }
 }

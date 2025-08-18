@@ -72,7 +72,11 @@ export default function AdminTheaters(){
     loadScreenings()
   }
 
-  function startEdit(s: Screening){ setEditingId(s.id); setEMovieId(s.movieId); setETheaterId(s.theaterId); setEDatetime(s.datetime.slice(0,16)); setEPrice(String(s.ticketPrice)) }
+  function startEdit(s: Screening){
+    const d = new Date(s.datetime)
+    const localInput = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0,16)
+    setEditingId(s.id); setEMovieId(s.movieId); setETheaterId(s.theaterId); setEDatetime(localInput); setEPrice(String(s.ticketPrice))
+  }
   function cancelEdit(){ setEditingId(null) }
 
   async function saveEdit(e: React.FormEvent){
