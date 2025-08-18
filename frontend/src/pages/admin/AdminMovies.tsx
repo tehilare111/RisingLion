@@ -150,9 +150,22 @@ export default function AdminMovies(){
               <tr key={m.id} className="border-t align-top">
                 <td className="p-2">
                   {editingId === m.id ? (
-                    <input className="border rounded px-2 py-1 w-full" value={eTitle} onChange={e=>setETitle(e.target.value)} />
-                  ) : m.title}
-                  <div className="text-xs text-gray-500 truncate max-w-xs">{m.description}</div>
+                    <>
+                      <input className="border rounded px-2 py-1 w-full" value={eTitle} onChange={e=>setETitle(e.target.value)} />
+                      <textarea
+                        className="mt-2 border rounded px-2 py-1 w-full"
+                        rows={3}
+                        value={eDescription}
+                        onChange={e=>setEDescription(e.target.value)}
+                        placeholder="Description"
+                      />
+                    </>
+                  ) : (
+                    <>
+                      {m.title}
+                      <div className="text-xs text-gray-500 truncate max-w-xs">{m.description}</div>
+                    </>
+                  )}
                 </td>
                 <td className="p-2 text-center">
                   {editingId === m.id ? (
