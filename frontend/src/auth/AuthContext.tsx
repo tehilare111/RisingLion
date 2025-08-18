@@ -50,9 +50,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() { return useContext(AuthContext) }
 
-export function authFetch(input: RequestInfo, init?: RequestInit) {
+export async function authFetch(input: RequestInfo, init?: RequestInit) {
   const token = localStorage.getItem('token')
   const headers = new Headers(init?.headers || {})
   if (token) headers.set('Authorization', `Bearer ${token}`)
-  return fetch(input, { ...init, headers })
+  const res = await fetch(input, { ...init, headers })
+  if (!res.ok) {
+    try {
+      const problem = await res.clone().json()
+      const title = problem?.title || 'Request failed'
+      const message = problem?.detail || problem?.message || `${res.status} ${res.statusText}`
+      window.dispatchEvent(new CustomEvent('app-error', { detail: { title, message } }))
+    } catch {
+      const message = `${res.status} ${res.statusText}`
+      window.dispatchEvent(new CustomEvent('app-error', { detail: { title: 'Request failed', message } }))
+    }
+  }
+  return res
+}
+
+export async function fetchJsonOrThrow(input: RequestInfo, init?: RequestInit): Promise<any> {
+  const res = await authFetch(input, init)
+  if (!res.ok) {
+    let title = 'Request failed'
+    let message = `${res.status} ${res.statusText}`
+    try {
+      const problem = await res.json()
+      // Spring ProblemDetail typically provides title/detail
+      if (problem?.title) title = problem.title
+      if (problem?.detail) message = problem.detail
+      else if (problem?.message) message = problem.message
+    } catch {}
+    const err = new Error(message) as Error & { title?: string; status?: number }
+    err.title = title
+    err.status = res.status
+    throw err
+  }
+  try { return await res.json() } catch { return null }
 }

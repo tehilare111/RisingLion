@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { authFetch } from '../../auth/AuthContext'
+import { authFetch, fetchJsonOrThrow } from '../../auth/AuthContext'
 
 const API = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
 
@@ -10,17 +10,22 @@ export default function AdminCategories(){
   const [newName, setNewName] = useState('')
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editName, setEditName] = useState('')
+  const [error, setError] = useState('')
+  const [errorTitle, setErrorTitle] = useState<string | undefined>(undefined)
 
   async function load(){
-    const res = await fetch(`${API}/categories`)
-    setCategories(await res.json())
+    try { setCategories(await fetchJsonOrThrow(`${API}/categories`)) }
+    catch (e: any) { setError(e?.message || 'Failed to load categories'); setErrorTitle(e?.title) }
   }
   useEffect(() => { load() }, [])
 
   async function createCategory(e: React.FormEvent){
     e.preventDefault()
     if (!newName.trim()) return
-    await authFetch(`${API}/admin/categories`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newName.trim() }) })
+    try {
+      const res = await authFetch(`${API}/admin/categories`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newName.trim() }) })
+      if (!res.ok) throw await toProblemError(res)
+    } catch (e: any) { setError(e?.message || 'Failed to create category'); setErrorTitle(e?.title); return }
     setNewName('')
     load()
   }
@@ -31,13 +36,33 @@ export default function AdminCategories(){
   async function saveEdit(e: React.FormEvent){
     e.preventDefault()
     if (editingId == null) return
-    await authFetch(`${API}/admin/categories/${editingId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: editName.trim() }) })
+    try {
+      const res = await authFetch(`${API}/admin/categories/${editingId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: editName.trim() }) })
+      if (!res.ok) throw await toProblemError(res)
+    } catch (e: any) { setError(e?.message || 'Failed to update category'); setErrorTitle(e?.title); return }
     cancelEdit(); load()
   }
 
   async function remove(c: Category){
-    await authFetch(`${API}/admin/categories/${c.id}`, { method: 'DELETE' })
+    try {
+      const res = await authFetch(`${API}/admin/categories/${c.id}`, { method: 'DELETE' })
+      if (!res.ok) throw await toProblemError(res)
+    } catch (e: any) { setError(e?.message || 'Failed to delete category'); setErrorTitle(e?.title); return }
     load()
+  }
+
+  async function toProblemError(res: Response) {
+    let title = 'Request failed'
+    let message = `${res.status} ${res.statusText}`
+    try {
+      const problem = await res.json()
+      if (problem?.title) title = problem.title
+      if (problem?.detail) message = problem.detail
+      else if (problem?.message) message = problem.message
+    } catch {}
+    const err = new Error(message) as Error & { title?: string; status?: number }
+    err.title = title; err.status = res.status
+    return err
   }
 
   return (

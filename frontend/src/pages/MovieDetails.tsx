@@ -17,6 +17,8 @@ export default function MovieDetails() {
   const [reviews, setReviews] = useState<Review[]>([])
   const [rating, setRating] = useState<number>(5)
   const [text, setText] = useState<string>('')
+  const [error, setError] = useState('')
+  const [errorTitle, setErrorTitle] = useState<string | undefined>(undefined)
   const myReview = useMemo(() => reviews.find(r => r.userId === user?.id), [reviews, user])
 
   useEffect(() => {
@@ -40,14 +42,22 @@ export default function MovieDetails() {
       body: JSON.stringify({ rating, text })
     })
     if (res.status === 403) { alert("You can only review movies you've seen."); return }
-    if (!res.ok) { alert('Failed to submit review'); return }
+    if (!res.ok) {
+      try { const p = await res.json(); setError(p?.detail || p?.message || 'Failed to submit review'); setErrorTitle(p?.title) }
+      catch { setError('Failed to submit review') }
+      return
+    }
     setReviews(await (await fetch(`${API}/movies/${id}/reviews`)).json())
   }
 
   async function deleteReview() {
     if (!user || !myReview) return
     const res = await authFetch(`${API}/movies/${id}/reviews`, { method: 'DELETE' })
-    if (!res.ok) { alert('Failed to delete review'); return }
+    if (!res.ok) {
+      try { const p = await res.json(); setError(p?.detail || p?.message || 'Failed to delete review'); setErrorTitle(p?.title) }
+      catch { setError('Failed to delete review') }
+      return
+    }
     setText(''); setRating(5)
     setReviews(await (await fetch(`${API}/movies/${id}/reviews`)).json())
   }

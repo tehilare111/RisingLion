@@ -10,9 +10,18 @@ export default function MovieScreenings() {
   // Use local date (not UTC) for default to avoid off-by-one issues
   const [date, setDate] = useState<string>(() => new Date().toLocaleDateString('en-CA'))
   const [items, setItems] = useState<Screening[]>([])
+  const [error, setError] = useState('')
+  const [errorTitle, setErrorTitle] = useState<string | undefined>(undefined)
 
   useEffect(() => {
-    fetch(`${API}/movies/${id}/screenings?date=${date}`).then(r => r.json()).then(setItems)
+    fetch(`${API}/movies/${id}/screenings?date=${date}`).then(async r => {
+      if (!r.ok) {
+        try { const p = await r.json(); setError(p?.detail || p?.message || 'Failed to load screenings'); setErrorTitle(p?.title) }
+        catch { setError('Failed to load screenings') }
+        return []
+      }
+      return r.json()
+    }).then(setItems as any)
   }, [id, date])
 
   return (
