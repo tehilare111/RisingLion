@@ -181,7 +181,17 @@ export default function AdminTheaters(){
                       </select>
                     ) : `Theater #${s.theaterId}`}
                   </td>
-                  <td className="p-2">{`$${s.ticketPrice}`}</td>
+                  <td className="p-2">
+                    {editingId === s.id ? (
+                      <input
+                        type="number"
+                        step="0.1"
+                        className="border rounded px-2 py-1 w-28 text-right"
+                        value={ePrice}
+                        onChange={e=>setEPrice(e.target.value)}
+                      />
+                    ) : `$${s.ticketPrice}`}
+                  </td>
                   <td className="p-2 space-x-2 whitespace-nowrap text-center">
                     {editingId === s.id ? (
                       <>
