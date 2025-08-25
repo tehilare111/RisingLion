@@ -67,19 +67,19 @@ export default function AdminCategories(){
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Categories</h1>
+      <h1 className="text-xl font-semibold font-display text-brand-black">Categories</h1>
 
       <form onSubmit={createCategory} className="flex gap-2 items-end">
         <div className="flex-1">
-          <label className="block text-sm text-gray-600">New category name</label>
+          <label className="block text-sm text-brand-brown">New category name</label>
           <input value={newName} onChange={e => setNewName(e.target.value)} className="w-full border rounded px-3 py-2" placeholder="e.g. Action" />
         </div>
-        <button className="px-3 py-2 border rounded bg-blue-600 text-white">Add</button>
+        <button className="btn-brand">Add</button>
       </form>
 
-      <table className="min-w-full border">
+      <table className="min-w-full border border-brand-brown/20 bg-white">
         <thead>
-          <tr className="bg-gray-100">
+          <tr className="bg-brand-cream/80">
             <th className="p-2 text-left">ID</th>
             <th className="p-2 text-left">Name</th>
             <th className="p-2">Actions</th>

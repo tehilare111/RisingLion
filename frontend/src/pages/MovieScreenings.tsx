@@ -29,7 +29,7 @@ export default function MovieScreenings() {
       <input type="date" value={date} onChange={e => setDate(e.target.value)} className="border p-2 rounded" />
       <div className="flex flex-wrap gap-2">
         {items.map(s => (
-          <Link key={s.id} to={`/movies/${id}/seats?screeningId=${s.id}`} className="bg-white border px-3 py-2 rounded">
+          <Link key={s.id} to={`/movies/${id}/seats?screeningId=${s.id}`} className="border border-brand-brown/20 bg-white px-3 py-2 rounded hover:shadow-brand">
             {new Date(s.datetime).toLocaleString()}
           </Link>
         ))}

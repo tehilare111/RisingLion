@@ -69,23 +69,23 @@ export default function MovieDetails() {
   return (
     <div className="space-y-8">
       <div className="grid md:grid-cols-3 gap-4">
-        <img src={movie.imageURL} alt={movie.title} className="w-full rounded" />
+        <img src={movie.imageURL} alt={movie.title} className="w-full rounded border border-brand-brown/20" />
         <div className="md:col-span-2 space-y-2">
-          <h1 className="text-2xl font-bold">{movie.title}</h1>
-          <div className="text-gray-500">{movie.category?.name} • {movie.duration} min</div>
+          <h1 className="text-2xl font-bold font-display text-brand-black">{movie.title}</h1>
+          <div className="text-brand-brown">{movie.category?.name} • {movie.duration} min</div>
           <p>{movie.description}</p>
-          <Link to={`/movies/${id}/screenings`} className="inline-block bg-blue-600 text-white px-4 py-2 rounded">View screenings</Link>
+          <Link to={`/movies/${id}/screenings`} className="btn-brand">View screenings</Link>
         </div>
       </div>
 
       <section>
-        <h2 className="font-semibold mb-2">Reviews</h2>
+        <h2 className="font-semibold mb-2 text-brand-black">Reviews</h2>
         <div className="space-y-3">
-          {reviews.length === 0 && <div className="text-gray-500">No reviews yet.</div>}
+          {reviews.length === 0 && <div className="text-brand-brown">No reviews yet.</div>}
           {reviews.map(r => (
-            <div key={r.id} className="border rounded p-3">
+            <div key={r.id} className="border border-brand-brown/20 bg-white rounded p-3">
               <div className="font-medium">Rating: {r.rating}/5</div>
-              <div className="text-sm text-gray-600">User #{r.userId}</div>
+              <div className="text-sm text-brand-brown">User #{r.userId}</div>
               <p className="mt-1 whitespace-pre-wrap">{r.text}</p>
             </div>
           ))}
@@ -93,7 +93,7 @@ export default function MovieDetails() {
       </section>
 
       <section>
-        <h3 className="font-semibold mb-2">{myReview ? 'Update your review' : 'Write a review'}</h3>
+        <h3 className="font-semibold mb-2 text-brand-black">{myReview ? 'Update your review' : 'Write a review'}</h3>
         <div className="flex flex-col gap-2 max-w-xl">
           <label className="flex items-center gap-2">Rating
             <select value={rating} onChange={e => setRating(Number(e.target.value))} className="border rounded p-2">
@@ -102,10 +102,10 @@ export default function MovieDetails() {
           </label>
           <textarea value={text} onChange={e => setText(e.target.value)} placeholder="Share your thoughts" className="border rounded p-2 min-h-[100px]" />
           <div className="flex gap-2">
-            <button onClick={submitReview} className="bg-blue-600 text-white px-4 py-2 rounded">{myReview ? 'Update' : 'Submit'}</button>
-            {myReview && <button onClick={deleteReview} className="bg-red-600 text-white px-4 py-2 rounded">Delete</button>}
+            <button onClick={submitReview} className="btn-brand">{myReview ? 'Update' : 'Submit'}</button>
+            {myReview && <button onClick={deleteReview} className="px-4 py-2 border rounded text-red-600">Delete</button>}
           </div>
-          <div className="text-xs text-gray-500">You can review only movies you have seen.</div>
+          <div className="text-xs text-brand-brown">You can review only movies you have seen.</div>
         </div>
       </section>
     </div>

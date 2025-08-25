@@ -12,9 +12,9 @@ export default function MyBookings() {
   useEffect(() => { authFetch(`${API}/bookings/me`).then(r => r.json()).then(setItems) }, [])
   return (
     <div className="space-y-2">
-      <h1 className="text-xl font-semibold">My bookings</h1>
+      <h1 className="text-xl font-semibold font-display text-brand-black">My bookings</h1>
       {items.map(b => (
-        <div key={b.id} className="bg-white border rounded p-3">
+        <div key={b.id} className="bg-white border border-brand-brown/20 rounded p-3">
           <div>ID: {b.id} • Screening: {b.screeningId}</div>
           <div>Tickets: {b.tickets.map(t => t.seatId).join(', ')}</div>
           <div>Total: {b.totalPrice}</div>

@@ -1,0 +1,20 @@
+{
+  "name": "Rising Lion Cinema",
+  "short_name": "Rising Lion",
+  "theme_color": "#C59D2A",
+  "background_color": "#F3E7D8",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "/rising-lion.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/rising-lion.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+
