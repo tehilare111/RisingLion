@@ -14,6 +14,7 @@ public interface ScreeningRepository extends JpaRepository<Screening, Long> {
 
     List<Screening> findByMovieIdAndDatetimeBetween(Long movieId, LocalDateTime start, LocalDateTime end);
 
-    // Added: portable date range query for a day (inclusive start, exclusive end)
     List<Screening> findByDatetimeBetween(LocalDateTime start, LocalDateTime end);
+
+    List<Screening> findByTheaterIdAndDatetimeBetween(Long theaterId, LocalDateTime start, LocalDateTime end);
 }

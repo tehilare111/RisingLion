@@ -4,6 +4,7 @@ import com.risinglion.domain.entity.Movie;
 import com.risinglion.domain.entity.Screening;
 import com.risinglion.domain.entity.Theater;
 import com.risinglion.domain.repo.ScreeningRepository;
+import com.risinglion.domain.repo.MovieRepository;
 import com.risinglion.domain.repo.TheaterRepository;
 import com.risinglion.mapper.Mappers;
 import com.risinglion.web.dto.CommonDtos.*;
@@ -24,11 +25,13 @@ public class ScreeningController {
 
     private final ScreeningRepository screeningRepository;
     private final TheaterRepository theaterRepository;
+    private final MovieRepository movieRepository;
     private final Mappers mappers;
 
-    public ScreeningController(ScreeningRepository screeningRepository, TheaterRepository theaterRepository, Mappers mappers) {
+    public ScreeningController(ScreeningRepository screeningRepository, TheaterRepository theaterRepository, MovieRepository movieRepository, Mappers mappers) {
         this.screeningRepository = screeningRepository;
         this.theaterRepository = theaterRepository;
+        this.movieRepository = movieRepository;
         this.mappers = mappers;
     }
 
@@ -71,9 +74,26 @@ public class ScreeningController {
     @PreAuthorize("hasRole('ADMIN')")
     public ScreeningDto createScreening(@Valid @RequestBody ScreeningCreateRequest req) {
         Screening s = new Screening();
-        Movie m = new Movie(); m.setId(req.movieId());
+        Movie m = movieRepository.findById(req.movieId()).orElseThrow();
         Theater t = new Theater(); t.setId(req.theaterId());
-        s.setMovie(m); s.setTheater(t); s.setDatetime(req.datetime().atZone(java.time.ZoneOffset.UTC).toLocalDateTime()); s.setTicketPrice(req.ticketPrice());
+
+        var start = req.datetime().atZone(java.time.ZoneOffset.UTC).toLocalDateTime();
+        var end = start.plusMinutes(m.getDuration());
+
+        var windowStart = start.minusDays(1);
+        var windowEnd = end.plusDays(1);
+        var conflicts = screeningRepository.findByTheaterIdAndDatetimeBetween(req.theaterId(), windowStart, windowEnd)
+                .stream()
+                .anyMatch(existing -> {
+                    var existingStart = existing.getDatetime();
+                    var existingEnd = existingStart.plusMinutes(existing.getMovie().getDuration());
+                    return start.isBefore(existingEnd) && end.isAfter(existingStart);
+                });
+        if (conflicts) {
+            throw new IllegalArgumentException("Screening overlaps with an existing screening in this theater");
+        }
+
+        s.setMovie(m); s.setTheater(t); s.setDatetime(start); s.setTicketPrice(req.ticketPrice());
         return mappers.toScreeningDto(screeningRepository.save(s));
     }
 
@@ -81,10 +101,27 @@ public class ScreeningController {
     @PreAuthorize("hasRole('ADMIN')")
     public ScreeningDto updateScreening(@PathVariable Long id, @Valid @RequestBody ScreeningUpdateRequest req) {
         Screening s = screeningRepository.findById(id).orElseThrow();
-        Movie m = new Movie(); m.setId(req.movieId());
+        Movie m = movieRepository.findById(req.movieId()).orElseThrow();
         Theater t = new Theater(); t.setId(req.theaterId());
 
-        s.setMovie(m); s.setTheater(t); s.setDatetime(req.datetime().atZone(java.time.ZoneOffset.UTC).toLocalDateTime()); s.setTicketPrice(req.ticketPrice());
+        var start = req.datetime().atZone(java.time.ZoneOffset.UTC).toLocalDateTime();
+        var end = start.plusMinutes(m.getDuration());
+
+        var windowStart = start.minusDays(1);
+        var windowEnd = end.plusDays(1);
+        var conflicts = screeningRepository.findByTheaterIdAndDatetimeBetween(req.theaterId(), windowStart, windowEnd)
+                .stream()
+                .filter(existing -> !existing.getId().equals(id))
+                .anyMatch(existing -> {
+                    var existingStart = existing.getDatetime();
+                    var existingEnd = existingStart.plusMinutes(existing.getMovie().getDuration());
+                    return start.isBefore(existingEnd) && end.isAfter(existingStart);
+                });
+        if (conflicts) {
+            throw new IllegalArgumentException("Screening overlaps with an existing screening in this theater");
+        }
+
+        s.setMovie(m); s.setTheater(t); s.setDatetime(start); s.setTicketPrice(req.ticketPrice());
         return mappers.toScreeningDto(screeningRepository.save(s));
     }
 
