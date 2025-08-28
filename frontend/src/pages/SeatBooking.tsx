@@ -52,19 +52,19 @@ export default function SeatBooking() {
 
   return (
     <div className="space-y-4">
-      <div className="text-sm text-gray-600">Ticket price: {screening ? screening.ticketPrice : '—'}</div>
+      <div className="text-sm text-brand-brown">Ticket price: {screening ? screening.ticketPrice : '—'}</div>
       <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${Math.max(...seats.map(s => s.number), 12)}, minmax(0,1fr))` }}>
         {rows.map(row => (
           <div key={row} className="contents">
             {seats.filter(s => s.row === row).map(s => (
-              <button key={s.id} onClick={() => toggleSeat(s.id, s.taken)} className={`border rounded p-2 text-center ${s.taken ? 'bg-gray-300' : selected.includes(s.id) ? 'bg-green-500 text-white' : 'bg-white'}`}>{row}{s.number}</button>
+              <button key={s.id} onClick={() => toggleSeat(s.id, s.taken)} className={`border rounded p-2 text-center ${s.taken ? 'bg-gray-300' : selected.includes(s.id) ? 'bg-brand-gold text-brand-black' : 'bg-white'} border-brand-brown/30`}>{row}{s.number}</button>
             ))}
           </div>
         ))}
       </div>
       <div className="flex items-center gap-4">
-        <div className="font-semibold">Selected: {selected.length} • Total: {total}</div>
-        <button disabled={!selected.length} onClick={book} className="bg-blue-600 disabled:opacity-50 text-white px-4 py-2 rounded">Book</button>
+        <div className="font-semibold text-brand-black">Selected: {selected.length} • Total: {total}</div>
+        <button disabled={!selected.length} onClick={book} className="btn-brand disabled:opacity-50">Book</button>
       </div>
     </div>
   )

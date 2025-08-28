@@ -15,17 +15,17 @@ export default function AdminUsers(){
 
   return (
     <div className="space-y-2">
-      <h1 className="text-xl font-semibold">Users</h1>
-      <table className="min-w-full border">
-        <thead><tr className="bg-gray-100"><th className="p-2 text-left">Email</th><th className="p-2">Role</th><th className="p-2">Actions</th></tr></thead>
+      <h1 className="text-xl font-semibold font-display text-brand-black">Users</h1>
+      <table className="min-w-full border border-brand-brown/20 bg-white">
+        <thead><tr className="bg-brand-cream/80"><th className="p-2 text-left">Email</th><th className="p-2">Role</th><th className="p-2">Actions</th></tr></thead>
         <tbody>
           {users.map(u => (
             <tr key={u.id} className="border-t">
               <td className="p-2">{u.email}</td>
               <td className="p-2">{u.isAdmin ? 'ADMIN' : 'USER'}</td>
               <td className="p-2 space-x-2">
-                <button onClick={() => toggleRole(u)} className="px-2 py-1 border rounded">{u.isAdmin ? 'Demote' : 'Promote'}</button>
-                <button onClick={() => remove(u)} className="px-2 py-1 border rounded text-red-600">Delete</button>
+                <button onClick={() => toggleRole(u)} className="btn-outline px-3 py-1">{u.isAdmin ? 'Demote' : 'Promote'}</button>
+                <button onClick={() => remove(u)} className="px-3 py-1 border rounded text-red-600">Delete</button>
               </td>
             </tr>
           ))}

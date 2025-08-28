@@ -18,11 +18,11 @@ export default function Login() {
 
   return (
     <form onSubmit={onSubmit} className="max-w-sm mx-auto space-y-3">
-      <h1 className="text-xl font-semibold">Login</h1>
+      <h1 className="text-xl font-semibold font-display text-brand-black">Login</h1>
       {error && <ErrorCard message={error} onClose={() => { setError('') }} />}
       <input className="border p-2 rounded w-full" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
       <input className="border p-2 rounded w-full" type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} />
-      <button className="bg-blue-600 text-white px-4 py-2 rounded">Login</button>
+      <button className="btn-brand">Login</button>
     </form>
   )
 }

@@ -50,11 +50,11 @@ export default function Home() {
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {movies.map(m => (
-          <Link key={m.id} to={`/movies/${m.id}`} className="bg-white rounded shadow overflow-hidden">
+          <Link key={m.id} to={`/movies/${m.id}`} className="bg-white rounded border border-brand-brown/20 hover:shadow-brand overflow-hidden">
             <img src={m.imageURL} alt={m.title} className="w-full h-40 object-cover" />
             <div className="p-2">
-              <div className="font-semibold">{m.title}</div>
-              <div className="text-sm text-gray-500">{m.category?.name}</div>
+              <div className="font-semibold text-brand-black">{m.title}</div>
+              <div className="text-sm text-brand-brown">{m.category?.name}</div>
             </div>
           </Link>
         ))}

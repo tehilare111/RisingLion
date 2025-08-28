@@ -2,5 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { color-scheme: light dark; }
-body { @apply bg-gray-50 text-gray-900; }
+:root { color-scheme: light; }
+body { @apply bg-brand-cream text-brand-black font-body; }
+
+.btn-brand { @apply inline-flex items-center justify-center rounded-md bg-brand-gold text-brand-black px-4 py-2 font-semibold shadow-brand hover:brightness-95 transition; }
+.btn-outline { @apply inline-flex items-center justify-center rounded-md border border-brand-gold text-brand-gold px-4 py-2 font-semibold hover:bg-brand-gold/10 transition; }
+
+.brand-header { @apply bg-white/90 backdrop-blur border-b border-brand-brown/20; }
+.brand-title { @apply font-display text-3xl md:text-4xl font-black tracking-tight text-brand-black; }
+.brand-subtitle { @apply text-brand-brown text-sm md:text-base; }
+
+/* Header navigation typography */
+.brand-nav-link { @apply text-sm md:text-base font-semibold tracking-wide text-brand-black/80 px-3 py-2 rounded-full hover:text-brand-black hover:bg-brand-gold/15 transition; }

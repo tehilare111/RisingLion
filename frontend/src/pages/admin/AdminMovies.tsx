@@ -122,47 +122,47 @@ export default function AdminMovies(){
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-semibold">Movies</h1>
+      <h1 className="text-xl font-semibold font-display text-brand-black">Movies</h1>
 
       {/* Create */}
-      <form onSubmit={createMovie} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 p-4 border rounded">
+      <form onSubmit={createMovie} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 p-4 border border-brand-brown/20 rounded bg-white">
         <div>
-          <label className="block text-sm text-gray-600">Title</label>
+          <label className="block text-sm text-brand-brown">Title</label>
           <input className="w-full border rounded px-3 py-2" value={title} onChange={e=>setTitle(e.target.value)} placeholder="Movie title" />
         </div>
         <div>
-          <label className="block text-sm text-gray-600">Duration (min)</label>
+          <label className="block text-sm text-brand-brown">Duration (min)</label>
           <input type="number" className="w-full border rounded px-3 py-2" value={duration} onChange={e=>setDuration(e.target.value ? Number(e.target.value) : '')} />
         </div>
         <div>
-          <label className="block text-sm text-gray-600">Release date</label>
+          <label className="block text-sm text-brand-brown">Release date</label>
           <input type="date" className="w-full border rounded px-3 py-2" value={releaseDate} onChange={e=>setReleaseDate(e.target.value)} />
         </div>
         <div className="md:col-span-2 lg:col-span-1">
-          <label className="block text-sm text-gray-600">Category</label>
+          <label className="block text-sm text-brand-brown">Category</label>
           <select className="w-full border rounded px-3 py-2" value={categoryId} onChange={e=>setCategoryId(e.target.value ? Number(e.target.value) : '')}>
             <option value="">Select...</option>
             {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </div>
         <div className="md:col-span-2">
-          <label className="block text-sm text-gray-600">Image URL</label>
+          <label className="block text-sm text-brand-brown">Image URL</label>
           <input className="w-full border rounded px-3 py-2" value={imageURL} onChange={e=>setImageURL(e.target.value)} placeholder="https://..." />
         </div>
         <div className="md:col-span-3">
-          <label className="block text-sm text-gray-600">Description</label>
+          <label className="block text-sm text-brand-brown">Description</label>
           <textarea className="w-full border rounded px-3 py-2" value={description} onChange={e=>setDescription(e.target.value)} rows={3} />
         </div>
         <div className="md:col-span-3">
-          <button className="px-3 py-2 border rounded bg-blue-600 text-white disabled:opacity-50" disabled={!canCreate}>Add Movie</button>
+          <button className="btn-brand disabled:opacity-50" disabled={!canCreate}>Add Movie</button>
         </div>
       </form>
 
       {/* List */}
       <div className="overflow-x-auto">
-        <table className="min-w-full border">
+        <table className="min-w-full border border-brand-brown/20 bg-white">
           <thead>
-            <tr className="bg-gray-100">
+            <tr className="bg-brand-cream/80">
               <th className="p-2 text-left">Title</th>
               <th className="p-2">Duration</th>
               <th className="p-2">Release</th>
@@ -213,13 +213,13 @@ export default function AdminMovies(){
                 <td className="p-2 space-x-2 whitespace-nowrap">
                   {editingId === m.id ? (
                     <>
-                      <button onClick={saveEdit} className="px-2 py-1 border rounded bg-blue-600 text-white">Save</button>
-                      <button onClick={cancelEdit} className="px-2 py-1 border rounded">Cancel</button>
+                      <button onClick={saveEdit} className="btn-brand px-3 py-1">Save</button>
+                      <button onClick={cancelEdit} className="btn-outline px-3 py-1">Cancel</button>
                     </>
                   ) : (
                     <>
-                      <button onClick={() => startEdit(m)} className="px-2 py-1 border rounded">Edit</button>
-                      <button onClick={() => remove(m)} className="px-2 py-1 border rounded text-red-600">Delete</button>
+                      <button onClick={() => startEdit(m)} className="btn-outline px-3 py-1">Edit</button>
+                      <button onClick={() => remove(m)} className="px-3 py-1 border rounded text-red-600">Delete</button>
                     </>
                   )}
                 </td>
