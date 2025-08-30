@@ -10,19 +10,24 @@ import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 @Service
 public class JwtService {
 
-    @Value("${app.jwt.secret}")
-    private String secret;
+    @Value("${app.jwt.secret:}")
+    private String configuredSecret;
 
     @Value("${app.jwt.expirationMinutes}")
     private long expirationMinutes;
+
+    private volatile Key cachedSigningKey;
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -66,7 +71,36 @@ public class JwtService {
     }
 
     private Key getSignInKey() {
-        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
-        return Keys.hmacShaKeyFor(keyBytes);
+        if (cachedSigningKey != null) {
+            return cachedSigningKey;
+        }
+
+        String envSecret = System.getenv("APP_JWT_SECRET");
+        String effectiveSecret = Optional.ofNullable(envSecret)
+                .filter(s -> !s.isBlank())
+                .or(() -> Optional.ofNullable(configuredSecret).filter(s -> !s.isBlank()))
+                .orElseGet(this::generateRuntimeSecret);
+
+        byte[] keyBytes;
+        try {
+            keyBytes = Base64.getUrlDecoder().decode(effectiveSecret);
+        } catch (IllegalArgumentException e1) {
+            try {
+                keyBytes = Base64.getDecoder().decode(effectiveSecret);
+            } catch (IllegalArgumentException e2) {
+                keyBytes = effectiveSecret.getBytes(StandardCharsets.UTF_8);
+            }
+        }
+        if (keyBytes.length < 32) {
+            keyBytes = effectiveSecret.getBytes(StandardCharsets.UTF_8);
+        }
+        cachedSigningKey = Keys.hmacShaKeyFor(keyBytes);
+        return cachedSigningKey;
+    }
+
+    private String generateRuntimeSecret() {
+        byte[] randomBytes = new byte[32];
+        new SecureRandom().nextBytes(randomBytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
     }
 }

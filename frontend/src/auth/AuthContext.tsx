@@ -51,6 +51,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() { return useContext(AuthContext) }
 
 export async function authFetch(input: RequestInfo, init?: RequestInit) {
+  // Preemptive refresh: if token is within 60s of expiring, refresh it before the request
+  try {
+    const url = typeof input === 'string' ? input : (input as Request).url
+    if (!url.includes('/auth/refresh')) {
+      await maybeRefreshTokenBeforeRequest()
+    }
+  } catch {}
+
   const token = localStorage.getItem('token')
   const headers = new Headers(init?.headers || {})
   if (token) headers.set('Authorization', `Bearer ${token}`)
@@ -80,6 +88,34 @@ export async function authFetch(input: RequestInfo, init?: RequestInit) {
     }
   }
   return res
+}
+
+function getTokenExpiryMs(token: string | null): number | null {
+  try {
+    if (!token) return null
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    if (!payload?.exp) return null
+    return payload.exp * 1000
+  } catch { return null }
+}
+
+async function maybeRefreshTokenBeforeRequest() {
+  const token = localStorage.getItem('token')
+  if (!token) return
+  const expMs = getTokenExpiryMs(token)
+  if (!expMs) return
+  const msToExpiry = expMs - Date.now()
+  if (msToExpiry > 60_000) return
+  // within 60s of expiry → refresh
+  try {
+    const res = await fetch(`${API}/auth/refresh`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } })
+    if (!res.ok) return
+    const data = await res.json()
+    if (data?.accessToken) {
+      localStorage.setItem('token', data.accessToken)
+      if (data.user) localStorage.setItem('user', JSON.stringify(data.user))
+    }
+  } catch {}
 }
 
 export async function fetchJsonOrThrow(input: RequestInfo, init?: RequestInit): Promise<any> {
