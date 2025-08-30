@@ -33,6 +33,8 @@ export default function AdminTheaters(){
 
   // Create theater
   const [creatingTheater, setCreatingTheater] = useState(false)
+  const [tRows, setTRows] = useState<string>('8')
+  const [tSeatsPerRow, setTSeatsPerRow] = useState<string>('12')
 
   // Create screening
   const [cMovieId, setCMovieId] = useState<number | ''>('')
@@ -70,7 +72,9 @@ export default function AdminTheaters(){
   async function createTheater(){
     setCreatingTheater(true)
     try {
-      const res = await authFetch(`${API}/admin/theaters`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
+      const rowsNum = Number(tRows)
+      const seatsNum = Number(tSeatsPerRow)
+      const res = await authFetch(`${API}/admin/theaters`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rows: Number.isFinite(rowsNum) && rowsNum > 0 ? rowsNum : undefined, seatsPerRow: Number.isFinite(seatsNum) && seatsNum > 0 ? seatsNum : undefined }) })
       if (!res.ok) {
         try { const p = await res.json(); setError(p?.detail || p?.message || 'Failed to create theater'); setErrorTitle(p?.title) } catch { setError('Failed to create theater') }
         return
@@ -123,7 +127,17 @@ export default function AdminTheaters(){
       <div className="border border-brand-brown/20 rounded p-4 space-y-3 bg-white">
         <div className="flex items-center justify-between">
           <h2 className="font-semibold">Theaters</h2>
-          <button onClick={createTheater} className="btn-brand" disabled={creatingTheater}>{creatingTheater ? 'Creating...' : 'Add Theater'}</button>
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-brand-brown flex items-center gap-1">
+              <span>Rows</span>
+              <input type="number" min={1} max={26} value={tRows} onChange={e=>setTRows(e.target.value)} className="border rounded px-2 py-1 w-20" />
+            </label>
+            <label className="text-sm text-brand-brown flex items-center gap-1">
+              <span>Seats/row</span>
+              <input type="number" min={1} value={tSeatsPerRow} onChange={e=>setTSeatsPerRow(e.target.value)} className="border rounded px-2 py-1 w-24" />
+            </label>
+            <button onClick={createTheater} className="btn-brand" disabled={creatingTheater || Number(tRows) <= 0 || Number(tSeatsPerRow) <= 0 || Number(tRows) > 26}>{creatingTheater ? 'Creating...' : 'Add Theater'}</button>
+          </div>
         </div>
         <ul className="list-disc pl-5 space-y-1">
           {theaters.map(t => (
