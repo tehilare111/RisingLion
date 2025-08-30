@@ -28,11 +28,19 @@ export default function MovieScreenings() {
     <div className="space-y-3">
       <input type="date" value={date} onChange={e => setDate(e.target.value)} className="border p-2 rounded" />
       <div className="flex flex-wrap gap-2">
-        {items.map(s => (
-          <Link key={s.id} to={`/movies/${id}/seats?screeningId=${s.id}`} className="border border-brand-brown/20 bg-white px-3 py-2 rounded hover:shadow-brand">
-            {new Date(s.datetime).toLocaleString()}
-          </Link>
-        ))}
+        {items.map(s => {
+          const dt = new Date(s.datetime)
+          const isPast = dt.getTime() < Date.now()
+          return (
+            <span key={s.id} className={`border border-brand-brown/20 px-3 py-2 rounded ${isPast ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white hover:shadow-brand'}`}>
+              {isPast ? (
+                <span>{dt.toLocaleString()}</span>
+              ) : (
+                <Link to={`/movies/${id}/seats?screeningId=${s.id}`}>{dt.toLocaleString()}</Link>
+              )}
+            </span>
+          )
+        })}
       </div>
     </div>
   )
