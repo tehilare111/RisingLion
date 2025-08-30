@@ -3,7 +3,7 @@ import { authFetch } from '../../auth/AuthContext'
 
 const API = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
 
-type Theater = { id: number }
+type Theater = { id: number; rows?: number; seatsPerRow?: number }
 
 type Movie = { id: number; title: string }
 
@@ -142,7 +142,7 @@ export default function AdminTheaters(){
         <ul className="list-disc pl-5 space-y-1">
           {theaters.map(t => (
             <li key={t.id} className="flex items-center justify-between">
-              <span>Theater #{t.id}</span>
+              <span>Theater #{t.id} {typeof t.rows === 'number' && typeof t.seatsPerRow === 'number' ? `• ${t.rows} x ${t.seatsPerRow}` : ''}</span>
               <button onClick={() => deleteTheater(t.id)} className="px-2 py-1 border rounded text-red-600">Delete</button>
             </li>
           ))}

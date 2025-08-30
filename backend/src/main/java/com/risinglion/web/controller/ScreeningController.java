@@ -7,6 +7,7 @@ import com.risinglion.domain.repo.ScreeningRepository;
 import com.risinglion.domain.repo.SeatRepository;
 import com.risinglion.domain.repo.MovieRepository;
 import com.risinglion.domain.repo.TheaterRepository;
+import com.risinglion.domain.repo.TicketRepository;
 import com.risinglion.mapper.Mappers;
 import com.risinglion.web.dto.CommonDtos.*;
 import jakarta.validation.Valid;
@@ -29,12 +30,14 @@ public class ScreeningController {
     private final MovieRepository movieRepository;
     private final SeatRepository seatRepository;
     private final Mappers mappers;
+    private final TicketRepository ticketRepository;
 
-    public ScreeningController(ScreeningRepository screeningRepository, TheaterRepository theaterRepository, MovieRepository movieRepository, SeatRepository seatRepository, Mappers mappers) {
+    public ScreeningController(ScreeningRepository screeningRepository, TheaterRepository theaterRepository, MovieRepository movieRepository, SeatRepository seatRepository, TicketRepository ticketRepository, Mappers mappers) {
         this.screeningRepository = screeningRepository;
         this.theaterRepository = theaterRepository;
         this.movieRepository = movieRepository;
         this.seatRepository = seatRepository;
+        this.ticketRepository = ticketRepository;
         this.mappers = mappers;
     }
 
@@ -46,12 +49,22 @@ public class ScreeningController {
         // Use start/end of day window to be portable across DBs and avoid DATE() in JPQL
         LocalDateTime start = date.atStartOfDay();
         LocalDateTime end = date.plusDays(1).atStartOfDay();
-        return screeningRepository.findByDatetimeBetween(start, end).stream().map(mappers::toScreeningDto).toList();
+        return screeningRepository.findByDatetimeBetween(start, end).stream().map(s -> {
+            var dto = mappers.toScreeningDto(s);
+            long taken = ticketRepository.countByScreeningId(s.getId());
+            int capacity = s.getTheater().getSeats().size();
+            return new ScreeningDto(dto.id(), dto.datetime(), dto.ticketPrice(), dto.movieId(), dto.theaterId(), taken >= capacity);
+        }).toList();
     }
 
     @GetMapping("/screenings/{id}")
     public ResponseEntity<ScreeningDto> getScreening(@PathVariable Long id) {
-        return screeningRepository.findById(id).map(mappers::toScreeningDto).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        return screeningRepository.findById(id).map(s -> {
+            var dto = mappers.toScreeningDto(s);
+            long taken = ticketRepository.countByScreeningId(s.getId());
+            int capacity = s.getTheater().getSeats().size();
+            return new ScreeningDto(dto.id(), dto.datetime(), dto.ticketPrice(), dto.movieId(), dto.theaterId(), taken >= capacity);
+        }).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/movies/{id}/screenings")
@@ -59,16 +72,24 @@ public class ScreeningController {
         LocalDate d = date != null ? date : LocalDate.now();
         LocalDateTime start = d.atStartOfDay();
         LocalDateTime end = d.plusDays(1).atStartOfDay();
-        return screeningRepository.findByMovieIdAndDatetimeBetween(id, start, end).stream().map(mappers::toScreeningDto).toList();
+        return screeningRepository.findByMovieIdAndDatetimeBetween(id, start, end).stream().map(s -> {
+            var dto = mappers.toScreeningDto(s);
+            long taken = ticketRepository.countByScreeningId(s.getId());
+            int capacity = s.getTheater().getSeats().size();
+            return new ScreeningDto(dto.id(), dto.datetime(), dto.ticketPrice(), dto.movieId(), dto.theaterId(), taken >= capacity);
+        }).toList();
     }
 
     @PostMapping("/admin/theaters")
     @PreAuthorize("hasRole('ADMIN')")
     public TheaterDto createTheater(@RequestBody TheaterCreateRequest req) {
-        Theater t = theaterRepository.save(Theater.builder().build());
-
         int rows = (req != null && req.rows() != null && req.rows() > 0) ? req.rows() : 8;
         int seatsPerRow = (req != null && req.seatsPerRow() != null && req.seatsPerRow() > 0) ? req.seatsPerRow() : 12;
+
+        Theater t = Theater.builder().build();
+        t.setRows(rows);
+        t.setSeatsPerRow(seatsPerRow);
+        t = theaterRepository.save(t);
 
         // Generate seats with row label as char (sequential)
         for (int r = 0; r < rows; r++) {

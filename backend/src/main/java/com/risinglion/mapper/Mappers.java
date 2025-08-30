@@ -36,6 +36,9 @@ public interface Mappers {
     TicketDto toTicketDto(Ticket t);
 
     @Mapping(target = "screeningId", source = "screening.id")
+    @Mapping(target = "theaterId", source = "screening.theater.id")
+    @Mapping(target = "movieTitle", source = "screening.movie.title")
+    @Mapping(target = "screeningDatetime", source = "screening.datetime", qualifiedByName = "localDateTimeToUtcZ")
     BookingDto toBookingDto(Booking b);
 
     @Mapping(target = "userId", source = "user.id")

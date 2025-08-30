@@ -19,7 +19,7 @@ public class CommonDtos {
     public record MovieUpdateRequest(String title, int duration, String description, LocalDate releaseDate, String imageURL, Long categoryId) {}
 
     // Theater & Seat
-    public record TheaterDto(Long id) {}
+    public record TheaterDto(Long id, Integer rows, Integer seatsPerRow) {}
     public record TheaterCreateRequest(Integer rows, Integer seatsPerRow) {}
     public record SeatDto(Long id, String row, int number, boolean taken) {}
 
@@ -29,7 +29,13 @@ public class CommonDtos {
     public record ScreeningUpdateRequest(Long movieId, Long theaterId, Instant datetime, BigDecimal ticketPrice) {}
 
     // Booking
-    public record BookingDto(Long id, Long screeningId, BigDecimal totalPrice, List<TicketDto> tickets) {}
+    public record BookingDto(Long id,
+                             Long screeningId,
+                             Long theaterId,
+                             String movieTitle,
+                             String screeningDatetime,
+                             BigDecimal totalPrice,
+                             List<TicketDto> tickets) {}
     public record TicketDto(Long id, Long seatId) {}
     public record BookingCreateRequest(Long screeningId, List<Long> seatIds) {}
 

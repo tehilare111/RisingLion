@@ -64,7 +64,7 @@ export default function SeatBooking() {
         ))}
       </div>
       <div className="flex items-center gap-4">
-        <div className="font-semibold text-brand-black">Selected: {selected.length} • Total: {total}</div>
+        <div className="font-semibold text-brand-black">Selected: {selected.length} • Total: {total}$</div>
         <button disabled={!selected.length} onClick={book} className="btn-brand disabled:opacity-50">Book</button>
       </div>
     </div>

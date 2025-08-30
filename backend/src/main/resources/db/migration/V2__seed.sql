@@ -1,23 +1,23 @@
 -- Seed categories
 INSERT INTO categories(name) VALUES ('Action'),('Drama'),('Comedy'),('Sci-Fi');
 
--- Theaters
-INSERT INTO theaters() VALUES (),(),();
+-- Theaters with layout (rows x seats)
+INSERT INTO theaters(row_count, seats_per_row) VALUES (8,12),(8,12),(8,12);
 
--- Seats: 8 rows (A-H) x 12 per theater without CTEs (broad MySQL compatibility)
+-- Seats: derive from theater layout (rows A.. and seat numbers)
 INSERT INTO seats(row_label, number, theater_id)
 SELECT rl.row_label, n.num, t.id AS theater_id
 FROM (
+  SELECT id, row_count, seats_per_row FROM theaters ORDER BY id LIMIT 3
+) t
+JOIN (
   SELECT 'A' AS row_label UNION ALL SELECT 'B' UNION ALL SELECT 'C' UNION ALL SELECT 'D'
   UNION ALL SELECT 'E' UNION ALL SELECT 'F' UNION ALL SELECT 'G' UNION ALL SELECT 'H'
-) rl
-CROSS JOIN (
+) rl ON ASCII(rl.row_label) - ASCII('A') < t.row_count
+JOIN (
   SELECT 1 AS num UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6
   UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9 UNION ALL SELECT 10 UNION ALL SELECT 11 UNION ALL SELECT 12
-) n
-CROSS JOIN (
-  SELECT id FROM theaters ORDER BY id LIMIT 3
-) t
+) n ON n.num <= t.seats_per_row
 ORDER BY t.id, rl.row_label, n.num;
 
 -- Movies

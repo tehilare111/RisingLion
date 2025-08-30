@@ -25,7 +25,9 @@ CREATE TABLE movies (
 );
 
 CREATE TABLE theaters (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  row_count INT NOT NULL,
+  seats_per_row INT NOT NULL
 );
 
 CREATE TABLE seats (
