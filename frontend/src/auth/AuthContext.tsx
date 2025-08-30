@@ -55,6 +55,18 @@ export async function authFetch(input: RequestInfo, init?: RequestInit) {
   const headers = new Headers(init?.headers || {})
   if (token) headers.set('Authorization', `Bearer ${token}`)
   const res = await fetch(input, { ...init, headers })
+  // If unauthorized, clear session and redirect to login
+  if (res.status === 401) {
+    try {
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+    } finally {
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login?session=expired'
+      }
+    }
+    return res
+  }
   if (!res.ok) {
     try {
       const problem = await res.clone().json()
@@ -68,6 +80,7 @@ export async function authFetch(input: RequestInfo, init?: RequestInit) {
   }
   return res
 }
+
 
 export async function fetchJsonOrThrow(input: RequestInfo, init?: RequestInit): Promise<any> {
   const res = await authFetch(input, init)
