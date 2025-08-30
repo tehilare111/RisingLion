@@ -75,27 +75,34 @@ public class JwtService {
             return cachedSigningKey;
         }
 
+        String effectiveSecret = resolveEffectiveSecret();
+        cachedSigningKey = Keys.hmacShaKeyFor(secretToKeyBytes(effectiveSecret));
+        return cachedSigningKey;
+    }
+
+    private String resolveEffectiveSecret() {
         String envSecret = System.getenv("APP_JWT_SECRET");
-        String effectiveSecret = Optional.ofNullable(envSecret)
+        return Optional.ofNullable(envSecret)
                 .filter(s -> !s.isBlank())
                 .or(() -> Optional.ofNullable(configuredSecret).filter(s -> !s.isBlank()))
                 .orElseGet(this::generateRuntimeSecret);
+    }
 
-        byte[] keyBytes;
+    private byte[] secretToKeyBytes(String secretValue) {
+        byte[] decoded;
         try {
-            keyBytes = Base64.getUrlDecoder().decode(effectiveSecret);
+            decoded = Base64.getUrlDecoder().decode(secretValue);
         } catch (IllegalArgumentException e1) {
             try {
-                keyBytes = Base64.getDecoder().decode(effectiveSecret);
+                decoded = Base64.getDecoder().decode(secretValue);
             } catch (IllegalArgumentException e2) {
-                keyBytes = effectiveSecret.getBytes(StandardCharsets.UTF_8);
+                decoded = secretValue.getBytes(StandardCharsets.UTF_8);
             }
         }
-        if (keyBytes.length < 32) {
-            keyBytes = effectiveSecret.getBytes(StandardCharsets.UTF_8);
+        if (decoded.length < 32) {
+            decoded = secretValue.getBytes(StandardCharsets.UTF_8);
         }
-        cachedSigningKey = Keys.hmacShaKeyFor(keyBytes);
-        return cachedSigningKey;
+        return decoded;
     }
 
     private String generateRuntimeSecret() {
