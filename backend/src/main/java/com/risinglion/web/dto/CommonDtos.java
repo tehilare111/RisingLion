@@ -20,7 +20,7 @@ public class CommonDtos {
 
     // Theater & Seat
     public record TheaterDto(Long id) {}
-    public record TheaterCreateRequest() {}
+    public record TheaterCreateRequest(Integer rows, Integer seatsPerRow) {}
     public record SeatDto(Long id, String row, int number, boolean taken) {}
 
     // Screening

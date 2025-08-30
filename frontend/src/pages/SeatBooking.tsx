@@ -25,6 +25,7 @@ export default function SeatBooking() {
   }, [screeningId])
 
   const total = useMemo(() => (screening ? selected.length * Number(screening.ticketPrice) : selected.length), [selected, screening])
+  const columns = useMemo(() => (seats.length ? Math.max(...seats.map(s => s.number)) : 12), [seats])
 
   function toggleSeat(id: number, taken: boolean) {
     if (taken) return
@@ -53,7 +54,7 @@ export default function SeatBooking() {
   return (
     <div className="space-y-4">
       <div className="text-sm text-brand-brown">Ticket price: {screening ? screening.ticketPrice : '—'}</div>
-      <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${Math.max(...seats.map(s => s.number), 12)}, minmax(0,1fr))` }}>
+      <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0,1fr))` }}>
         {rows.map(row => (
           <div key={row} className="contents">
             {seats.filter(s => s.row === row).map(s => (

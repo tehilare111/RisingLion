@@ -4,6 +4,7 @@ import com.risinglion.domain.entity.Movie;
 import com.risinglion.domain.entity.Screening;
 import com.risinglion.domain.entity.Theater;
 import com.risinglion.domain.repo.ScreeningRepository;
+import com.risinglion.domain.repo.SeatRepository;
 import com.risinglion.domain.repo.MovieRepository;
 import com.risinglion.domain.repo.TheaterRepository;
 import com.risinglion.mapper.Mappers;
@@ -26,12 +27,14 @@ public class ScreeningController {
     private final ScreeningRepository screeningRepository;
     private final TheaterRepository theaterRepository;
     private final MovieRepository movieRepository;
+    private final SeatRepository seatRepository;
     private final Mappers mappers;
 
-    public ScreeningController(ScreeningRepository screeningRepository, TheaterRepository theaterRepository, MovieRepository movieRepository, Mappers mappers) {
+    public ScreeningController(ScreeningRepository screeningRepository, TheaterRepository theaterRepository, MovieRepository movieRepository, SeatRepository seatRepository, Mappers mappers) {
         this.screeningRepository = screeningRepository;
         this.theaterRepository = theaterRepository;
         this.movieRepository = movieRepository;
+        this.seatRepository = seatRepository;
         this.mappers = mappers;
     }
 
@@ -63,6 +66,23 @@ public class ScreeningController {
     @PreAuthorize("hasRole('ADMIN')")
     public TheaterDto createTheater(@RequestBody TheaterCreateRequest req) {
         Theater t = theaterRepository.save(Theater.builder().build());
+
+        // Determine layout
+        int rows = (req != null && req.rows() != null && req.rows() > 0) ? req.rows() : 8;
+        int seatsPerRow = (req != null && req.seatsPerRow() != null && req.seatsPerRow() > 0) ? req.seatsPerRow() : 12;
+
+        // Auto-generate seats with row labels A, B, C, ...
+        for (int r = 0; r < rows; r++) {
+            char rowLabel = (char) ('A' + r);
+            for (int num = 1; num <= seatsPerRow; num++) {
+                var seat = com.risinglion.domain.entity.Seat.builder()
+                        .row(String.valueOf(rowLabel))
+                        .number(num)
+                        .theater(t)
+                        .build();
+                seatRepository.save(seat);
+            }
+        }
         return mappers.toTheaterDto(t);
     }
 
